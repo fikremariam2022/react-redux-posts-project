@@ -11,13 +11,22 @@ const initialState = {
 export const fetchPosts = createAsyncThunk("posts/fetchPosts", async () => {
   try {
     const response = await axios.get(POST_URL);
-    console.log("data.......................", { ...response });
     return response.data;
   } catch (err) {
-    console.log("error fetching");
     return err.message;
   }
 });
+export const addNewPost = createAsyncThunk(
+  "posts/addNewPost",
+  async (initialPost) => {
+    try {
+      const response = await axios.post(POST_URL, initialPost);
+      return response.data;
+    } catch (err) {
+      return err.message;
+    }
+  }
+);
 const postSlice = createSlice({
   name: "posts",
   initialState: initialState,
@@ -80,9 +89,20 @@ const postSlice = createSlice({
         state.status = "failed";
         state.error = action.error.message;
       })
-      .addDefaultCase((state, action) => {
-        console.log("default case");
-      });
+      .addCase(addNewPost.fulfilled, (state, action) => {
+        action.payload.userId = Number(action.payload.userId);
+        action.payload.Date = new Date().toISOString();
+        action.payload.reactions = {
+          thumbsUp: 0,
+          wow: 0,
+          heart: 0,
+          rocket: 0,
+          coffee: 0,
+        };
+        console.log(action.payload);
+        state.posts.push(action.payload);
+      })
+      .addDefaultCase((state, action) => {});
   },
 });
 export default postSlice.reducer;
@@ -90,3 +110,6 @@ export const { postAdded, updateReaction } = postSlice.actions;
 export const selectAllPost = (state) => state.post.posts;
 export const getPostStatus = (state) => state.post.status;
 export const getPostError = (state) => state.post.error;
+
+export const selectPostById = (state, postId) =>
+  state.post.posts.find((post) => post.id === postId);

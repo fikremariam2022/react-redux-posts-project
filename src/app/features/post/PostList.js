@@ -6,11 +6,10 @@ import {
   getPostError,
   fetchPosts,
 } from "./postsSlice";
-import AddPostForm from "./AddPostForm";
 import PostAuthor from "./PostAuthor";
 import TimeAgo from "./TimeAgo";
 import PostReaction from "./PostReaction";
-
+import { Link } from "react-router-dom";
 export default function PostList() {
   const dispatch = useDispatch();
   const posts = useSelector(selectAllPost);
@@ -20,7 +19,6 @@ export default function PostList() {
   useEffect(() => {
     if (postStatus === "idle") dispatch(fetchPosts());
   }, [postStatus, dispatch]);
-  console.log(postStatus);
   if (postStatus === "loading") {
     return <p>Loading...</p>;
   } else if (postStatus === "failed") {
@@ -31,18 +29,19 @@ export default function PostList() {
     .slice()
     .sort((a, b) => b.date.localeCompare(a.date));
 
-  const renderPosts = orderedPosts.map((post) => (
-    <article key={post.id}>
+  const renderPosts = orderedPosts.map((post, index) => (
+    <article key={index}>
       <h3>{post.title}</h3>
       <p>{post.body}</p>
       <PostAuthor userId={post.userId} />
       <TimeAgo timestamp={post.date} />
+      <Link to={`post/${post.id}`}>View Post</Link>
+
       <PostReaction post={post} />
     </article>
   ));
   return (
     <div>
-      <AddPostForm />
       <section>
         <h2>Posts</h2>
         {renderPosts}
